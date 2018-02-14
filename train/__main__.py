@@ -17,7 +17,7 @@ def get_cmd_args():
 
 def main():
     args = get_cmd_args()
-    dataset = EyeClosedDataset("/home/mtk/dataset/eye-closed/dataset_B_Eye_Images/",image_shape=(24,24),left_eye=args.left)
+    dataset = EyeClosedDataset(args.dataset_dir,image_shape=(24,24),left_eye=args.left)
     dataset.load_dataset()
     net = EyeClosedNet(dataset,left_eye=args.left,
             epochs=args.epochs,batch_size=args.batch_size,lr=args.lr,steps_per_epoch=args.steps,
