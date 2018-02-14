@@ -58,6 +58,7 @@ def main():
     # cv2.waitKey(0)
     # cv2.destroyAllWindows()
     args = get_cmd_args()
+    print args.left
     if args.left:
         split_train_test_left_eye_dataset(args.dataset_dir)
     else:
