@@ -7,6 +7,9 @@ from keras.preprocessing.image import ImageDataGenerator
 
 class EyeClosedDataset(object):
     def __init__(self,dataset_dir,image_shape=(24,24),left_eye=True):
+        if not os.path.exists(dataset_dir):
+            print("Dataset path ",dataset_dir," does not exist")
+            exit(0)
         self.dataset_dir = dataset_dir
         self.image_shape = image_shape
         self.left_eye = left_eye
