@@ -2,6 +2,15 @@ import cv2
 import dlib
 import numpy as np
 from demo import split_train_test_left_eye_dataset,split_train_test_right_eye_dataset
+import argparse
+def get_cmd_args():
+    parser = argparse.ArgumentParser()
+
+    parser.add_argument("--dataset_dir",default="",type=str)
+    parser.add_argument("--left",default=True,type=bool)
+
+    args = parser.parse_args()
+    return args
 
 def main():
     # img = cv2.imread("imgs/image00041.jpg")
@@ -48,8 +57,11 @@ def main():
     # cv2.imshow("Image",img)
     # cv2.waitKey(0)
     # cv2.destroyAllWindows()
-    split_train_test_left_eye_dataset("/home/mtk/dataset/eye-closed/dataset_B_Eye_Images")
-    # split_train_test_right_eye_dataset("/home/mtk/dataset/eye-closed/dataset_B_Eye_Images")
+    args = get_cmd_args()
+    if args.left:
+        split_train_test_left_eye_dataset(args.dataset_dir)
+    else:
+        split_train_test_right_eye_dataset(args.dataset_dir)
 
 if __name__ == "__main__":
     main()

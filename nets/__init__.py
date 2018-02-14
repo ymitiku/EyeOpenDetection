@@ -16,7 +16,9 @@ class EyeClosedNet(object):
         self.weights = weights
         self.output = output
         if not self.weights is None:
+            print "loading weights from ",self.weights
             self.model.model.load_weights(weights)
+            print "loaded model weights"
     def train(self):
         
         X_test = self.dataset.test_images
