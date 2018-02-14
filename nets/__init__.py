@@ -29,7 +29,7 @@ class EyeClosedNet(object):
         model.fit_generator(self.dataset.generator(self.batch_size),epochs=self.epochs,
             steps_per_epoch=self.steps_per_epoch,verbose=True,validation_data=[X_test,y_test])
         score = model.evaluate(X_test,y_test)
-        if left_eye:
+        if self.left_eye:
             self.model.model.save_weights("models/"+self.output+".h5")
         else:
             self.model.model.save_weights("models/"+self.output+".h5")
