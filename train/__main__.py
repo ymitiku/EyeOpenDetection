@@ -5,7 +5,7 @@ def get_cmd_args():
     parser = argparse.ArgumentParser()
 
     parser.add_argument("--dataset_dir",default="",type=str)
-    parser.add_argument("--left",default=True,type=bool)
+    parser.add_argument("--left",type=bool)
     parser.add_argument("--epochs",default=10,type=int)
     parser.add_argument("--batch_size",default=32,type=int)
     parser.add_argument("--lr",default=1e-4,type=float)
