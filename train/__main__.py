@@ -1,5 +1,6 @@
 from dataset import EyeClosedDataset
 from nets import EyeClosedNet
+import argparse
 def get_cmd_args():
     parser = argparse.ArgumentParser()
 
@@ -19,7 +20,7 @@ def main():
     dataset = EyeClosedDataset("/home/mtk/dataset/eye-closed/dataset_B_Eye_Images/",image_shape=(24,24),left_eye=args.left)
     dataset.load_dataset()
     net = EyeClosedNet(dataset,left_eye=args.left,
-            epochs=args.epochs,batch_size=args.batch_size,lr=args.lr,steps_per_epoch=args.steps
+            epochs=args.epochs,batch_size=args.batch_size,lr=args.lr,steps_per_epoch=args.steps,
             weights=args.weights,output=args.output)
     net.train()
 

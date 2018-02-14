@@ -20,8 +20,10 @@ class EyeClosedNet(object):
         X_test = self.dataset.test_images
         y_test = self.dataset.test_opened
         if self.left_eye:
+            print "training left eye model"
             model = self.model.get_model_with_output_layer("left_eye_open")
         else:
+            print "training right eye model"
             model = self.model.get_model_with_output_layer("right_eye_open")
         model.compile(loss=keras.losses.binary_crossentropy,optimizer=keras.optimizers.Adam(self.lr),metrics=["accuracy"])
         model.fit_generator(self.dataset.generator(self.batch_size),epochs=self.epochs,
