@@ -15,6 +15,8 @@ class EyeClosedNet(object):
         self.steps_per_epoch = steps_per_epoch
         self.weights = weights
         self.output = output
+        if not self.weights is None:
+            self.model.model.load_weights(weights)
     def train(self):
         
         X_test = self.dataset.test_images
