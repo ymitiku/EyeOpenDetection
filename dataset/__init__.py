@@ -47,16 +47,13 @@ class EyeStateDataset(object):
             print "Dataset is not loaded"
             exit(0)
         datagen = ImageDataGenerator(
-                featurewise_center=True,
-                featurewise_std_normalization=True,
-                zca_whitening = True,
-                rotation_range=10,
+                
+                rotation_range=20,
                 width_shift_range=0.1,
                 height_shift_range=0.1,
                 zoom_range=0.1,
                 shear_range=0.1
                 
                 )
-        
         return datagen.flow(self.train_images,self.train_opened,batch_size=batch_size)
     
