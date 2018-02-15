@@ -1,12 +1,12 @@
-from nets.model import EyeClosedModel
+from nets.model import EyeStateModel
 import keras
 
 
-class EyeClosedNet(object):
+class EyeStateNet(object):
     def __init__(self,dataset,left_eye=True,epochs = 10,batch_size=32,lr = 1e-4,steps_per_epoch=200,
             weights=None,output=None):
         self.dataset = dataset
-        eye_closed_model = EyeClosedModel((24,24,1))
+        eye_closed_model = EyeStateModel((24,24,1))
         self.model = eye_closed_model
         self.left_eye = left_eye
         self.epochs = epochs

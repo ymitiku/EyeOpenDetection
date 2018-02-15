@@ -1,6 +1,6 @@
 from keras.layers import Input,Dense,Conv2D,MaxPooling2D,Flatten,Dropout
 from keras.models import Model
-class EyeClosedModel(object):
+class EyeStateModel(object):
     def __init__(self,input_shape):
         self.model = self.build(input_shape)
     def build(self,input_shape):

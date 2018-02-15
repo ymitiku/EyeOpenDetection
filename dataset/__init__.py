@@ -5,7 +5,7 @@ import os
 from keras.preprocessing.image import ImageDataGenerator
 
 
-class EyeClosedDataset(object):
+class EyeStateDataset(object):
     def __init__(self,dataset_dir,image_shape=(24,24),left_eye=True):
         if not os.path.exists(dataset_dir):
             print("Dataset path ",dataset_dir," does not exist")
@@ -47,10 +47,14 @@ class EyeClosedDataset(object):
             print "Dataset is not loaded"
             exit(0)
         datagen = ImageDataGenerator(
+                featurewise_center=True,
+                featurewise_std_normalization=True,
+                zca_whitening = True,
                 rotation_range=10,
                 width_shift_range=0.1,
                 height_shift_range=0.1,
-                zoom_range=0.1
+                zoom_range=0.1,
+                shear_range=0.1
                 
                 )
         

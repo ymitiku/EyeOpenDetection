@@ -1,5 +1,5 @@
-from dataset import EyeClosedDataset
-from nets import EyeClosedNet
+from dataset import EyeStateDataset
+from nets import EyeStateNet
 import argparse
 def get_cmd_args():
     parser = argparse.ArgumentParser()
@@ -17,9 +17,9 @@ def get_cmd_args():
 
 def main():
     args = get_cmd_args()
-    dataset = EyeClosedDataset(args.dataset_dir,image_shape=(24,24),left_eye=args.left)
+    dataset = EyeStateDataset(args.dataset_dir,image_shape=(24,24),left_eye=args.left)
     dataset.load_dataset()
-    net = EyeClosedNet(dataset,left_eye=args.left,
+    net = EyeStateNet(dataset,left_eye=args.left,
             epochs=args.epochs,batch_size=args.batch_size,lr=args.lr,steps_per_epoch=args.steps,
             weights=args.weights,output=args.output)
     net.train()
