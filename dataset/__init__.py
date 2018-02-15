@@ -59,4 +59,13 @@ class EyeStateDataset(object):
                 )
         
         return datagen.flow(self.train_images,self.train_opened,batch_size=batch_size)
-    
+
+
+class EyeStateFacialDataset(object):
+    def __init__(self,dataset_dir,image_shape=(24,24)):
+        self.dataset_dir = dataset_dir
+        self.image_shape = image_shape
+    def load_dataset(self):
+        pass
+    def load_images(self,dataframe):
+        pass

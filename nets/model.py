@@ -26,3 +26,22 @@ class EyeStateModel(object):
                 model = Model(input_layer,outputs=[output_layer_output])
                 return model
         raise Exception("The model doesnot contain layer with name: "+str(layer_name))
+
+
+
+class MultiInputEyeStateModel(object):
+    def __init__(self,input_shape):
+        self.model = self.build(input_shape)
+    def build(self):
+        image_layer = Input(shape=self.input_shape)
+        image_layer = Conv2D(32,kernel_size=3,strides=1,padding='same')(image_layer)
+        image_layer = MaxPooling2D(pool_size=(2,2))(image_layer)
+        image_layer = Conv2D(64,kernel_size=3,strides=1,padding='same')(image_layer)
+        image_layer = MaxPooling2D(pool_size=(2, 2))(image_layer)
+        image_layer = Flatten()(image_layer)
+
+        key_points = Input(shape=(1,6,2))
+        
+        dists = Input(shape=(1,6,1))
+
+        angles = Input(shape=(1,6,1))
