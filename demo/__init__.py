@@ -255,7 +255,7 @@ def get_attributes_from_local_frame(face_image,key_points_11,image_shape):
 
     # bound the coordinate system inside eye image
     bottom_right[0] = min(face_image_shape[1],bottom_right[0])
-    bottom_right[1] = min(face_image_shape[0],bottom_right[1])
+    bottom_right[1] = min(face_image_shape[0],bottom_right[1]+5)
     top_left[0] = max(0,top_left[0])
     top_left[1] = max(0,top_left[1])
 
@@ -320,6 +320,10 @@ def eye_state_multiinput_webcam_demo(model_path):
     cap = cv2.VideoCapture(-1)
     detector = dlib.get_frontal_face_detector()
     predictor = dlib.shape_predictor("shape_predictor_68_face_landmarks.dat")
+    json_model = model.to_json()
+    with open("models/multi-input.json", "w+") as json_file:
+        json_file.write(json_model)
+    exit(0)
     # model.summary()
     while cap.isOpened():
         _,frame = cap.read()

@@ -23,7 +23,7 @@ def main():
     if args.process == "webcam_demo":
         if args.network=="si":
             eye_open_webcam_demo("models/left2.h5")
-        else:
+        else:   
             eye_state_multiinput_webcam_demo("models/multi-input.h5")
     elif args.process == "split dataset":
         if args.face_dataset:
