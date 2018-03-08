@@ -18,29 +18,34 @@ class MultiInputEyeStateModel(object):
         #    18,19,20,21,22,37,38,39,40,41,42
         # order of key points for right eye
         #    23,24,25,26,27,43,44,45,46,47,48
-        key_points_input_layer = Input(shape=(1,11,2))
+        key_points_input_layer = Input(shape=(1,6,2))
         key_points = Conv2D(8,kernel_size=(1,3),strides=(1, 1),padding='same',activation="relu",kernel_initializer='glorot_uniform')(key_points_input_layer)
         key_points = Conv2D(16,kernel_size=(1,3),strides=(1, 1),padding='same',activation="relu",kernel_initializer='glorot_uniform')(key_points)
         key_points = Flatten()(key_points)
     
-        dists_input_layer = Input(shape=(1,11,1))
+        dists_input_layer = Input(shape=(1,6,1))
         dists = Conv2D(8,kernel_size=(1,3),strides=(1, 1),padding='same',activation="relu",kernel_initializer='glorot_uniform')(dists_input_layer)
         dists = Conv2D(16,kernel_size=(1,3),strides=(1, 1),padding='same',activation="relu",kernel_initializer='glorot_uniform')(dists)
         dists = Flatten()(dists)
 
-        angles_input_layer = Input(shape=(1,11,1))
+        angles_input_layer = Input(shape=(1,6,1))
         angles = Conv2D(8,kernel_size=(1,3),strides=(1, 1),padding='same',activation="relu",kernel_initializer='glorot_uniform')(angles_input_layer)
         angles = Conv2D(16,kernel_size=(1,3),strides=(1, 1),padding='same',activation="relu",kernel_initializer='glorot_uniform')(angles)
         angles = Flatten()(angles)
+        
+        aspect_ratio_input_layer = Input(shape=(1,))
+        aspect_ratio_layer = Dense(8)(aspect_ratio_input_layer)
+        aspect_ratio_layer = Dense(16)(aspect_ratio_layer)
 
-        merged_layers = keras.layers.concatenate([image_layer, key_points,dists,angles])
+
+        merged_layers = keras.layers.concatenate([image_layer, key_points,dists,angles,aspect_ratio_layer])
         
         merged_layers = Dense(128, activation='relu')(merged_layers)
         merged_layers = Dropout(0.2)(merged_layers)
         merged_layers = Dense(256, activation='relu')(merged_layers)
         merged_layers = Dropout(0.2)(merged_layers)
         merged_layers = Dense(2, activation='softmax')(merged_layers)
-        model = Model(inputs=[image_input_layer, key_points_input_layer,dists_input_layer,angles_input_layer],outputs=merged_layers)
+        model = Model(inputs=[image_input_layer, key_points_input_layer,dists_input_layer,angles_input_layer,aspect_ratio_input_layer],outputs=merged_layers)
         return model
 
 
@@ -68,7 +73,7 @@ class MultiInputEyeStateNet(object):
         key_points = self.dataset.test_key_points
         dists = self.dataset.test_dists
         angles = self.dataset.test_angles
-
+        aspect_ratios = self.dataset.test_aspect_ratios
         key_points = np.expand_dims(key_points,1)
         dists = np.expand_dims(dists,1)
         angles = np.expand_dims(angles,1)
@@ -78,7 +83,7 @@ class MultiInputEyeStateNet(object):
         dists = dists.astype(np.float32)/24
         angles = angles.astype(np.float32)/np.pi
      
-        X_test = [eye_images,key_points,dists,angles]
+        X_test = [eye_images,key_points,dists,angles,aspect_ratios]
         y_test = self.dataset.test_opened
 
         y_test = np.eye(2)[y_test.astype(np.uint8)]
@@ -91,4 +96,6 @@ class MultiInputEyeStateNet(object):
             steps_per_epoch=self.steps_per_epoch,verbose=True,validation_data=[X_test,y_test])
         score = model.evaluate(X_test,y_test)
         self.model.model.save_weights("models/"+self.output+".h5")
+        with open("logs/log.txt","a+") as log_file:
+            log_file.write(self.output+" score: "+str(score))
         print "Score",score

@@ -11,12 +11,16 @@ class MultiInputEyeStateDataset(object):
         self.image_shape = image_shape
         self.predictor = predictor
         self.dataset_loaded = False
-    
-    def get_attributes_from_local_frame(self,face_image,key_points_11):
+    def get_aspect_ratio(self,dlib_points):
+        p2_p6 = np.linalg.norm(dlib_points[1]-dlib_points[5])
+        p3_p5 = np.linalg.norm(dlib_points[3]-dlib_points[4])
+        p1_p4 = np.linalg.norm(dlib_points[0]-dlib_points[3])
+        return (p2_p6 + p3_p5)/float(p1_p4)
+    def get_attributes_from_local_frame(self,face_image,key_points_6):
         
         face_image_shape = face_image.shape
-        top_left = key_points_11.min(axis=0)
-        bottom_right = key_points_11.max(axis=0)
+        top_left = key_points_6.min(axis=0)
+        bottom_right = key_points_6.max(axis=0)
 
         # bound the coordinate system inside eye image
         bottom_right[0] = min(face_image_shape[1],bottom_right[0])
@@ -29,8 +33,8 @@ class MultiInputEyeStateDataset(object):
         bottom_right = bottom_right.astype(np.uint8)
         eye_image = face_image[top_left[1]:bottom_right[1],top_left[0]:bottom_right[0]]
         # translate the eye key points from face image frame to eye image frame
-        key_points_11 = key_points_11 - top_left
-        key_points_11 +=np.finfo(float).eps
+        key_points_6 = key_points_6 - top_left
+        key_points_6 +=np.finfo(float).eps
         # horizontal scale to resize image
         scale_h = self.image_shape[1]/float(eye_image.shape[1])
         # vertical scale to resize image
@@ -41,17 +45,17 @@ class MultiInputEyeStateDataset(object):
 
         # scale left key points proportional with respect to left eye image resize scale
         scale = np.array([[scale_h,scale_v]])
-        key_points_11 = key_points_11 * scale 
+        key_points_6 = key_points_6 * scale 
 
         # calculate centroid of left eye key points 
-        centroid = np.array([key_points_11.mean(axis=0)])
+        centroid = np.array([key_points_6.mean(axis=0)])
 
         # calculate distances from  centroid to each left eye key points
-        dists = self.distance_between(key_points_11,centroid)
+        dists = self.distance_between(key_points_6,centroid)
 
         # calculate angles between centroid point vector and left eye key points vectors
-        angles = self.angles_between(key_points_11,centroid)
-        return eye_image, key_points_11,dists,angles
+        angles = self.angles_between(key_points_6,centroid)
+        return eye_image, key_points_6,dists,angles
 
     def get_left_eye_attributes(self,face_image):
         
@@ -60,13 +64,15 @@ class MultiInputEyeStateDataset(object):
         kps = self.get_dlib_points(face_image,self.predictor,face_rect)
         # Get key points of the eye and eyebrow
 
-        key_points_11 = self.get_left_key_points(kps)
+        key_points_6 = self.get_left_key_points(kps)
         
-        eye_image,key_points_11,dists,angles = self.get_attributes_from_local_frame(face_image,key_points_11)
+        eye_image,key_points_6,dists,angles = self.get_attributes_from_local_frame(face_image,key_points_6)
         face_image = self.draw_key_points(face_image,kps)
 
+        aspect_ratio = np.array(self.get_aspect_ratio(key_points_6))
+
         
-        return eye_image,key_points_11,dists,angles
+        return eye_image,key_points_6,dists,angles,aspect_ratio
     def draw_key_points(self,image,kps):
         for kp in kps:
            image = cv2.circle(image,(int(kp[0]),int(kp[1])),1,(0,255,0))
@@ -78,11 +84,12 @@ class MultiInputEyeStateDataset(object):
         kps = self.get_dlib_points(face_image,self.predictor,face_rect)
         # Get key points of the eye and eyebrow
 
-        key_points_11 = self.get_right_key_points(kps)
+        key_points_6 = self.get_right_key_points(kps)
         
-        eye_image,key_points_11,dists,angles = self.get_attributes_from_local_frame(face_image,key_points_11)
+        eye_image,key_points_6,dists,angles = self.get_attributes_from_local_frame(face_image,key_points_6)
+        aspect_ratio = np.array(self.get_aspect_ratio(key_points_6))
 
-        return eye_image,key_points_11,dists,angles
+        return eye_image,key_points_6,dists,angles,aspect_ratio
         
 
 
@@ -99,20 +106,18 @@ class MultiInputEyeStateDataset(object):
         v2_norm = np.linalg.norm(v2,axis=1)
         
 
-        cosine_of_angle = (dot_prod/(v1_norm * v2_norm)).reshape(11,1)
+        cosine_of_angle = (dot_prod/(v1_norm * v2_norm)).reshape(-1,1)
 
         angles = np.arccos(np.clip(cosine_of_angle,-1,1))
         return angles
 
     def get_right_key_points(self,key_points):
-        output = np.zeros((11,2))
-        output[0:5] = key_points[17:22]
-        output[5:11] = key_points[36:42]
+        output = np.zeros((6,2))
+        output[0:6] = key_points[36:42]
         return output
     def get_left_key_points(self,key_points):
-        output = np.zeros((11,2))
-        output[0:5] = key_points[22:27]
-        output[5:11] = key_points[42:48]
+        output = np.zeros((6,2))
+        output[0:6] = key_points[42:48]
         return output
     def load_dataset(self):
         if not os.path.exists(os.path.join(self.dataset_dir,"train.pkl")):
@@ -129,7 +134,7 @@ class MultiInputEyeStateDataset(object):
         self.train_face_images = self.load_face_images(train_df)
         test_face_images = self.load_face_images(test_df)
         
-        self.test_images,self.test_key_points,self.test_dists,self.test_angles,self.test_opened = self.__load_dataset(test_face_images,self.test_opened)
+        self.test_images,self.test_key_points,self.test_dists,self.test_angles,self.test_aspect_ratios,self.test_opened = self.__load_dataset(test_face_images,self.test_opened)
 
         self.dataset_loaded = True
     def load_face_images(self,df):
@@ -144,26 +149,29 @@ class MultiInputEyeStateDataset(object):
         return output_images
     def __load_dataset(self,imgs,opened):
         output_eye_images = np.zeros((len(imgs)*2,self.image_shape[0],self.image_shape[1],1))
-        output_eye_key_points = np.zeros((len(imgs)*2,11,2))
-        output_eye_kp_dists = np.zeros((len(imgs)*2,11,1))
-        output_eye_kp_angles = np.zeros((len(imgs)*2,11,1))
+        output_eye_key_points = np.zeros((len(imgs)*2,6,2))
+        output_eye_kp_dists = np.zeros((len(imgs)*2,6,1))
+        output_eye_kp_angles = np.zeros((len(imgs)*2,6,1))
+        output_eye_aspect_ratios = np.zeros((len(imgs)*2,1))
         output_opened = np.zeros((len(opened)*2))
         for index in range(len(imgs)):
             img = imgs[index].astype(np.uint8)
             img = img.reshape(100,100)
             for j in range(2):
                 if j==0:
-                    eye_image,kp,kp_dists,kp_angles = self.get_left_eye_attributes(img)
+                    eye_image,kp,kp_dists,kp_angles,aspect_ratio = self.get_left_eye_attributes(img)
                 else:
-                    eye_image,kp,kp_dists,kp_angles = self.get_right_eye_attributes(img)
+                    eye_image,kp,kp_dists,kp_angles,aspect_ratio = self.get_right_eye_attributes(img)
                 output_eye_images[index*2+j] = eye_image.reshape(-1,self.image_shape[0],self.image_shape[1],1)
-                output_eye_key_points[index*2+j] = kp.reshape(11,2)
-                output_eye_kp_dists [index*2+j] = kp_dists.reshape(11,1)
-                output_eye_kp_angles[index*2+j] = kp_angles.reshape(11,1)
+                output_eye_key_points[index*2+j] = kp.reshape(-1,2)
+                output_eye_kp_dists [index*2+j] = kp_dists.reshape(-1,1)
+                output_eye_kp_angles[index*2+j] = kp_angles.reshape(-1,1)
+                output_eye_aspect_ratios[index*2+j] = aspect_ratio
                 output_opened[index*2+j] = opened[index]
+
                 
            
-        return output_eye_images,output_eye_key_points,output_eye_kp_dists,output_eye_kp_angles,output_opened
+        return output_eye_images,output_eye_key_points,output_eye_kp_dists,output_eye_kp_angles,output_eye_aspect_ratios,output_opened
     def get_dlib_points(self,img,predictor,rectangle):
         shape = predictor(img,rectangle)
         dlib_points = np.zeros((68,2))
@@ -172,7 +180,7 @@ class MultiInputEyeStateDataset(object):
         return dlib_points
     def generator(self,batch_size):
         datagen = ImageDataGenerator(
-                rotation_range=30,
+                rotation_range=20,
                 width_shift_range=0.1,
                 height_shift_range=0.1,
                 zoom_range=0.1,
@@ -185,7 +193,7 @@ class MultiInputEyeStateDataset(object):
         while True:
             
             face_images,opened = current_generator.next()
-            eye_images,key_points,dists,angles,new_opened = self.__load_dataset(face_images,opened)
+            eye_images,key_points,dists,angles,aspect_ratios,new_opened = self.__load_dataset(face_images,opened)
             key_points = np.expand_dims(key_points,1)
             dists = np.expand_dims(dists,1)
             angles = np.expand_dims(angles,1)
@@ -196,7 +204,7 @@ class MultiInputEyeStateDataset(object):
             angles = angles.astype(np.float32)/np.pi
 
             
-            X = [eye_images,key_points,dists,angles]
+            X = [eye_images,key_points,dists,angles,aspect_ratios]
             y = np.eye(2)[new_opened.astype(np.uint8)]
             yield X,y
 
