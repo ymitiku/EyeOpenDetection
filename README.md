@@ -9,13 +9,14 @@ Training project to detect if eye is open or closed
 python -m train --network mi --dataset_dir /path/to/dataset of the model --output /path/to/output file --image_size image_height image_width
 ```
 ### To run single input model use
+```
 python -m train --network si --dataset_dir /path/to/dataset of the model --output /path/to/output file --image_size image_height image_width
 ```
 
 Where 
 * ```--m``` module type. It can be either ```train``` or ```demo```. 
 * ```--network``` network type. It can be either ```mi``` or ```si```. 
-* ```--output``` path to model's weight output file
+* ```--output``` path to model's weight output file.
 * ```--epochs``` specifies the number of passes through the dataset.
 * ```--batch_size``` refers to the number of training examples utilised in one iteration usually between 1 and size of the dataset.
 * ```--lr``` the learning rate of the model.
