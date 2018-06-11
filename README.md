@@ -44,3 +44,4 @@ Where
  conda env create -f requirements.yml -n emopy_2
  ```
 
+### Added pretrained model with cropped image size of 24 by 24 which can be used for testing.
