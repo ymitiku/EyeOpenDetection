@@ -41,7 +41,7 @@ class MultiInputEyeStateModel(object):
 
 
 class MultiInputEyeStateNet(object):
-    def __init__(self,dataset,epochs = 10,batch_size=32,lr = 1e-4,steps_per_epoch=200,image_size=(24,32),weights=None,output=None):
+    def __init__(self,dataset,epochs = 80,batch_size=32,lr = 1e-4,steps_per_epoch=200,image_size=(24,32),weights=None,output=None):
         self.dataset = dataset
         eye_closed_model = MultiInputEyeStateModel((image_size[0],image_size[1],1))
         self.model = eye_closed_model
@@ -89,8 +89,8 @@ class MultiInputEyeStateNet(object):
         score = model.evaluate(X_test,y_test)
         self.model.model.save_weights(self.output+".h5")
         model_json = model.to_json()
-        with open("3.json", "w") as json_file:
+        with open("1.json", "w") as json_file:
                 json_file.write(model_json)
 # serialize weights to HDF5
         #loaded_model = model_from_json(loaded_model_json)
-        print ("Score",score)
+        print "Score",score

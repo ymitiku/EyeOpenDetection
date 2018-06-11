@@ -28,11 +28,14 @@ class MultiInputEyeStateDataset(object):
         top_left = top_left.astype(np.uint8)
         bottom_right = bottom_right.astype(np.uint8)
         eye_image = face_image[top_left[1]:bottom_right[1],top_left[0]:bottom_right[0]]
+
         # translate the eye key points from face image frame to eye image frame
         key_points_11 = key_points_11 - top_left
         key_points_11 +=np.finfo(float).eps
+
         # horizontal scale to resize image
         scale_h = self.image_shape[1]/float(eye_image.shape[1])
+
         # vertical scale to resize image
         scale_v = self.image_shape[0]/float(eye_image.shape[0])
 
@@ -178,11 +181,11 @@ class MultiInputEyeStateDataset(object):
 
     def generator(self,batch_size):
         datagen = ImageDataGenerator(
-                rotation_range=30,
+                rotation_range=10,
                 width_shift_range=0.1,
                 height_shift_range=0.1,
                 zoom_range=0.1,
-                shear_range=0.1,
+#                shear_range=0.1,
                 horizontal_flip=True
                 
                 )
